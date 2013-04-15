@@ -14,12 +14,18 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <sys/time.h>
+#include <time.h>
 
 #define PORT "3490"  // the port users will be connecting to
 
 #define BACKLOG 10     // how many pending connections queue will hold
 
+#define BUFSIZE 20
+
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
+
+#define MAX 100
 
 int initiateServer();
 FILE* openBD();
@@ -50,17 +56,74 @@ int main(void)
 	listaISBN();
 }
 
+typedef struct Livro {
+  char isbn[13];
+  char titulo[200];
+  char descricao[300];
+  char autores[100];
+  char editora[50];
+  char ano[4];
+  char quant[3];
+} Serv_livro;
+
+
+Serv_livro livros[MAX];/*vetor contendo os livros*/
+int TAM = 0;/*guarda o numero de livros*/
+
+void zerabuffer(char *buffer){
+  int i;
+  for(i=0;i<BUFSIZE;i++)
+    buffer[i] = '\0';
+}
+/*funcao para insercao de um novo filme no banco*/
+void popula_banco()
+{
+FILE *fp;
+  fp = fopen("bd.txt","w");
+  if (!fp){
+  	printf("Erro na abertura do arquivo");
+		exit(0);
+  }
+	
+  fprintf(stderr, "%s","entre com ISBN\n"); 
+  scanf(" %[^\n]", livros[TAM].isbn);
+  fprintf(fp, "ISBN: %s\n",livros[TAM].isbn);
+  fprintf(stderr, "%s","entre com titulo\n"); 
+  scanf(" %[^\n]", livros[TAM].titulo);
+  fprintf(fp, "Titulo: %s\n",livros[TAM].titulo);
+	fprintf(stderr, "%s","entre com descricao\n"); 
+  scanf(" %[^\n]", livros[TAM].descricao);
+	fprintf(fp, "Descrição: %s\n",livros[TAM].descricao);  
+	fprintf(stderr, "%s","entre com autores\n"); 
+  scanf(" %[^\n]", livros[TAM].autores);
+	fprintf(fp, "Autores: %s\n",livros[TAM].autores);
+  fprintf(stderr, "%s","entre com editora\n"); 
+  scanf(" %[^\n]", livros[TAM].editora);
+	fprintf(fp, "Editora: %s\n",livros[TAM].editora);
+  fprintf(stderr, "%s","entre com ano\n"); 
+  scanf(" %[^\n]", livros[TAM].ano);
+	fprintf(fp, "Ano: %s\n",livros[TAM].ano);
+	fprintf(stderr, "%s","entre com a quantidade em estoque\n"); 
+  scanf(" %[^\n]", livros[TAM].quant);
+	fprintf(fp, "Estoque: %s\n",livros[TAM].quant);
+  TAM++; 
+	fclose(fp);
+ return;
+}
+
 int initiateServer() {
 
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	char buf[MAXDATASIZE];
-	int numbytes;
+	int numbytes,i;
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address information
     socklen_t sin_size;
     struct sigaction sa;
     int yes=1;
     char s[INET6_ADDRSTRLEN];
+	for(i=0;i<MAXDATASIZE;i++) 
+		buf[i]='\0';
     int rv;
     
 
@@ -68,6 +131,9 @@ int initiateServer() {
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE; // use my IP
+
+    for(i=0;i<2;i++)
+	    popula_banco();
 
     if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
 	fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
@@ -176,7 +242,7 @@ void listaISBN() {
 	bd = openBD();
 }
 
-public void leSocket(size) {
+/*public void leSocket(size) {
 	int i;
 	for (i=0;i<(size);	
 	
@@ -189,7 +255,7 @@ public void leSocket(size) {
 			return
 		}
 	}
-}
+}*/	
 
 
 
