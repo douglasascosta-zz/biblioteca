@@ -30,6 +30,7 @@
 int initiateServer();
 FILE* openBD();
 void listaISBN();
+void leSocket(int new_fd, char* buf);
 
 
 
@@ -83,6 +84,7 @@ int initiateServer() {
 	char buf[MAXDATASIZE];
 	int numbytes,i;
 	FILE *fp;
+	int i;
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address information
     socklen_t sin_size;
@@ -169,11 +171,7 @@ int initiateServer() {
 	//continuar fazendo recv
 
 	while (1) {
-		do {
-			numbytes = ((int)recv(new_fd, buf, MAXDATASIZE-1, 0));
-		} while (numbytes == -1); 
-		buf[numbytes] = '\0';
-		printf("%s\n", buf);
+		leSocket(new_fd, buf);
 		if (!fork()) { // this is the child process
 	    		close(sockfd); // child doesn't need the listener
 	    		if (send(new_fd, "lido", strlen(buf), 0) == -1)
@@ -250,20 +248,17 @@ int i;
 	  
  return;
 }
-/*public void leSocket(size) {
-	int i;
-	for (i=0;i<(size);	
-	
-		while (1) {
-			do {
-				numbytes = ((int)recv(new_fd, buf, MAXDATASIZE-1, 0));
-			} while (numbytes == -1); 
-			buf[numbytes] = '\0';
-			printf("%s\n", buf);
-			return
-		}
-	}
-}*/	
+
+void leSocket(int new_fd, char* buf) {
+
+	int numbytes;
+
+	do {
+		numbytes = ((int)recv(new_fd, buf, MAXDATASIZE-1, 0));
+	} while (numbytes == -1); 
+	buf[numbytes] = '\0';
+	printf("%s\n", buf);
+}
 
 
 
