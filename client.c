@@ -28,6 +28,23 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+void menu(){
+	int menu;
+//imprime o menu para o cliente
+	    printf("--------------- Livros--------------\n\n"); 
+	    printf("	1 - Lista todos os ISBN com os títulos\n");
+	    printf("	2 - Descrição a partir do ISBN\n");
+	    printf("	3 - Todas as informações a partir do ISBN\n");
+	    printf("	4 - Lista todas as informações de todos os livros\n"); 
+	    printf("	5 - Altera o número de exemplares em estoque\n"); 
+	    printf("	6 - Número de exemplares em estoque a partir do ISBN\n"); 
+	    printf("	7 - Sair\n"); 
+	
+	    printf("Escolha uma opÃ§ao:");
+	    scanf("%s",menu);
+		
+}
+
 int main(int argc, char *argv[])
 {
     int sockfd, numbytes;  
@@ -75,9 +92,10 @@ int main(int argc, char *argv[])
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
             s, sizeof s);
     printf("client: connecting to %s\n", s);
-
-    freeaddrinfo(servinfo); // all done with this structure
 	
+    freeaddrinfo(servinfo); // all done with this structure
+	//imprime o menu pro cliente.	
+	//menu();
 	while (1) {
 		buf[0] = '\0';
 		scanf("%s", &buf);
@@ -88,7 +106,7 @@ int main(int argc, char *argv[])
 		printf("%s\n", buf);
 	}
 
-   
+   	
 
     buf[numbytes] = '\0';
 
