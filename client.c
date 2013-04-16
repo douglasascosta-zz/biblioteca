@@ -18,6 +18,9 @@
 
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
 
+void zeraBuffer(char *buf);
+void menu();
+
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -28,25 +31,9 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-void menu(){
-	int menu;
-//imprime o menu para o cliente
-	    printf("--------------- Livros--------------\n\n"); 
-	    printf("	1 - Lista todos os ISBN com os títulos\n");
-	    printf("	2 - Descrição a partir do ISBN\n");
-	    printf("	3 - Todas as informações a partir do ISBN\n");
-	    printf("	4 - Lista todas as informações de todos os livros\n"); 
-	    printf("	5 - Altera o número de exemplares em estoque\n"); 
-	    printf("	6 - Número de exemplares em estoque a partir do ISBN\n"); 
-	    printf("	7 - Sair\n"); 
-	
-	    printf("Escolha uma opÃ§ao:");
-	    scanf("%s",menu);
-		
-}
-
 int main(int argc, char *argv[])
 {
+	char opcao[1], isbn[13];
     int sockfd, numbytes;  
     char buf[MAXDATASIZE];
     struct addrinfo hints, *servinfo, *p;
@@ -97,9 +84,17 @@ int main(int argc, char *argv[])
 	//imprime o menu pro cliente.	
 	//menu();
 	while (1) {
-		buf[0] = '\0';
-		scanf("%s", &buf);
+		menu();
+		scanf("%s", &opcao);
+		strcat(buf, opcao);
+
+		strcat(buf, " - ");	
+		printf("Digite ISBN: ");
+		scanf("%s", &isbn);
+		strcat(buf, isbn);		
 		
+		printf("%s\n", buf);
+
 		while (send(sockfd, buf, strlen(buf), 0) == -1) {
 		}
 		while (recv(sockfd, buf, MAXDATASIZE-1, 0) == -1);
@@ -116,3 +111,26 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+void zeraBuffer(char *buf){
+  int i;
+  for(i=0;i<MAXDATASIZE;i++)
+    buf[i] = '\0';
+}
+
+void menu(){
+//imprime o menu para o cliente
+	    printf("--------------- Livros--------------\n\n"); 
+	    printf("	1 - Lista todos os ISBN com os títulos\n");
+	    printf("	2 - Descrição a partir do ISBN\n");
+	    printf("	3 - Todas as informações a partir do ISBN\n");
+	    printf("	4 - Lista todas as informações de todos os livros\n"); 
+	    printf("	5 - Altera o número de exemplares em estoque\n"); 
+	    printf("	6 - Número de exemplares em estoque a partir do ISBN\n"); 
+	    printf("	7 - Sair\n"); 
+	
+	    printf("Escolha uma opção:");
+		
+}
+
+

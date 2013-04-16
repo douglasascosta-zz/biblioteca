@@ -31,7 +31,8 @@ int initiateServer();
 FILE* openBD();
 void listaISBN();
 void leSocket(int new_fd, char* buf);
-
+void analisaOpcao(int new_fd, char* buf);
+void zeraBuffer(char *buf);
 
 
 void sigchld_handler(int s)
@@ -84,7 +85,6 @@ int initiateServer() {
 	char buf[MAXDATASIZE];
 	int numbytes,i;
 	FILE *fp;
-	int i;
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address information
     socklen_t sin_size;
@@ -170,18 +170,20 @@ int initiateServer() {
 
 	//continuar fazendo recv
 
-	while (1) {
+	if (!fork()) { // this is the child process
+		printf("entrou no fork");
+    		close(sockfd); // child doesn't need the listener
+		zeraBuffer(buf);
 		leSocket(new_fd, buf);
-		if (!fork()) { // this is the child process
-	    		close(sockfd); // child doesn't need the listener
-	    		if (send(new_fd, "lido", strlen(buf), 0) == -1)
-				perror("send");
-	    		close(new_fd);
-	    		exit(0);
-		}
+		printf("%s",buf);
+		analisaOpcao(new_fd, buf);
+    		if (send(new_fd, "lido", strlen(buf), 0) == -1)
+			perror("send");
+    		close(new_fd);
+    		exit(0);
 	}
 
-	
+	printf("não entrou no fork");
 	close(new_fd);  // parent doesn't need this
     }
 
@@ -260,8 +262,20 @@ void leSocket(int new_fd, char* buf) {
 	printf("%s\n", buf);
 }
 
+void analisaOpcao(int new_fd, char* buf) {
+	
+	char* opcoes;
+	opcoes = strsep(&buf, " - ");
+	printf("%c\n",opcoes[0]);
+	printf("%c\n",opcoes[1]);
+}
 
 
+void zeraBuffer(char *buf){
+  int i;
+  for(i=0;i<MAXDATASIZE;i++)
+    buf[i] = '\0';
+}
 
 
 
