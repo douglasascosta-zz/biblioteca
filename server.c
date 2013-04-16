@@ -51,7 +51,7 @@ void *get_in_addr(struct sockaddr *sa)
 int main(void)
 {
 	int opcao;
-
+	
 	initiateServer();
 	listaISBN();
 }
@@ -75,47 +75,14 @@ void zerabuffer(char *buffer){
   for(i=0;i<BUFSIZE;i++)
     buffer[i] = '\0';
 }
-/*funcao para insercao de um novo filme no banco*/
-void popula_banco()
-{
-FILE *fp;
-  fp = fopen("bd.txt","w");
-  if (!fp){
-  	printf("Erro na abertura do arquivo");
-		exit(0);
-  }
-	
-  fprintf(stderr, "%s","entre com ISBN\n"); 
-  scanf(" %[^\n]", livros[TAM].isbn);
-  fprintf(fp, "ISBN: %s\n",livros[TAM].isbn);
-  fprintf(stderr, "%s","entre com titulo\n"); 
-  scanf(" %[^\n]", livros[TAM].titulo);
-  fprintf(fp, "Titulo: %s\n",livros[TAM].titulo);
-	fprintf(stderr, "%s","entre com descricao\n"); 
-  scanf(" %[^\n]", livros[TAM].descricao);
-	fprintf(fp, "Descrição: %s\n",livros[TAM].descricao);  
-	fprintf(stderr, "%s","entre com autores\n"); 
-  scanf(" %[^\n]", livros[TAM].autores);
-	fprintf(fp, "Autores: %s\n",livros[TAM].autores);
-  fprintf(stderr, "%s","entre com editora\n"); 
-  scanf(" %[^\n]", livros[TAM].editora);
-	fprintf(fp, "Editora: %s\n",livros[TAM].editora);
-  fprintf(stderr, "%s","entre com ano\n"); 
-  scanf(" %[^\n]", livros[TAM].ano);
-	fprintf(fp, "Ano: %s\n",livros[TAM].ano);
-	fprintf(stderr, "%s","entre com a quantidade em estoque\n"); 
-  scanf(" %[^\n]", livros[TAM].quant);
-	fprintf(fp, "Estoque: %s\n",livros[TAM].quant);
-  TAM++; 
-	fclose(fp);
- return;
-}
+
 
 int initiateServer() {
 
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	char buf[MAXDATASIZE];
 	int numbytes,i;
+	FILE *fp;
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address information
     socklen_t sin_size;
@@ -131,11 +98,12 @@ int initiateServer() {
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE; // use my IP
-
-    for(i=0;i<2;i++)
-	    popula_banco();
-
-    if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
+		//Faz a população do banco
+		
+  	//fp = fopen("bd.csv","w");
+	//popula_banco(fp);
+	//fclose(fp);  
+		if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
 	fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 	return 1;
     }
@@ -241,7 +209,47 @@ void listaISBN() {
 	FILE *bd;
 	bd = openBD();
 }
-
+/*funcao para insercao de um novo filme no banco*/
+void popula_banco(FILE *fp)
+{
+int i;
+  if (!fp){
+  	printf("Erro na abertura do arquivo");
+		exit(0);
+  }else{
+	for(i=0;i<2;i++){
+	if(i==0){
+		fprintf(fp, "%s,%s,%s,%s\n",livros[TAM].isbn, livros[TAM].isbn, livros[TAM].isbn, livros[TAM].isbn);
+	
+	}else{
+	  fprintf(stderr, "%s","entre com ISBN\n"); 
+	  scanf(" %[^\n]", livros[TAM].isbn);
+	  fprintf(fp, "ISBN: %s\n",livros[TAM].isbn);
+	  fprintf(stderr, "%s","entre com titulo\n"); 
+	  scanf(" %[^\n]", livros[TAM].titulo);
+	  fprintf(fp, "Titulo: %s\n",livros[TAM].titulo);
+		fprintf(stderr, "%s","entre com descricao\n"); 
+	  scanf(" %[^\n]", livros[TAM].descricao);
+		fprintf(fp, "Descrição: %s\n",livros[TAM].descricao);  
+		fprintf(stderr, "%s","entre com autores\n"); 
+	  scanf(" %[^\n]", livros[TAM].autores);
+		fprintf(fp, "Autores: %s\n",livros[TAM].autores);
+	  fprintf(stderr, "%s","entre com editora\n"); 
+	  scanf(" %[^\n]", livros[TAM].editora);
+		fprintf(fp, "Editora: %s\n",livros[TAM].editora);
+	  fprintf(stderr, "%s","entre com ano\n"); 
+	  scanf(" %[^\n]", livros[TAM].ano);
+		fprintf(fp, "Ano: %s\n",livros[TAM].ano);
+		fprintf(stderr, "%s","entre com a quantidade em estoque\n"); 
+	  scanf(" %[^\n]", livros[TAM].quant);
+		fprintf(fp, "Estoque: %s\n",livros[TAM].quant);
+	  TAM++; 
+	}
+	}
+  }
+	  
+ return;
+}
 /*public void leSocket(size) {
 	int i;
 	for (i=0;i<(size);	
