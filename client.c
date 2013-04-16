@@ -82,9 +82,10 @@ int main(int argc, char *argv[])
 	
     freeaddrinfo(servinfo); // all done with this structure
 	//imprime o menu pro cliente.	
-	//menu();
+	menu();
 	while (1) {
-		menu();
+/*		menu();
+		
 		scanf("%s", &opcao);
 		strcat(buf, opcao);
 
@@ -94,6 +95,9 @@ int main(int argc, char *argv[])
 		strcat(buf, isbn);		
 		
 		printf("%s\n", buf);
+
+*/
+
 
 		while (send(sockfd, buf, strlen(buf), 0) == -1) {
 		}

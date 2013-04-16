@@ -33,6 +33,7 @@ void listaISBN();
 void leSocket(int new_fd, char* buf);
 void analisaOpcao(int new_fd, char* buf);
 void zeraBuffer(char *buf);
+void popula_banco();
 
 
 void sigchld_handler(int s)
@@ -55,7 +56,7 @@ int main(void)
 	int opcao;
 	
 	initiateServer();
-	listaISBN();
+	//listaISBN();
 }
 
 typedef struct Livro {
@@ -103,8 +104,10 @@ int initiateServer() {
 		//Faz a população do banco
 		
   	//fp = fopen("bd.csv","w");
-	//popula_banco(fp);
-	//fclose(fp);  
+		//popula_banco(fp);
+		//fclose(fp);
+		
+
 		if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
 	fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 	return 1;
@@ -191,64 +194,82 @@ int initiateServer() {
 }
 
 
-FILE* openBD() {
-
-	FILE *fp;
-	fp = fopen("bd.txt", "r");
-	if (fp == NULL) {
-		printf("Problema ao abrir o arquivo\n");
-	} else {
-		printf("Arquivo aberto com sucesso\n");
-		return fp;
-	}
-}
-
-
-void listaISBN() {
-
-	FILE *bd;
-	bd = openBD();
-}
 /*funcao para insercao de um novo filme no banco*/
-void popula_banco(FILE *fp)
-{
+void popula_banco(FILE *fp){
 int i;
   if (!fp){
   	printf("Erro na abertura do arquivo");
 		exit(0);
   }else{
-	for(i=0;i<2;i++){
-	if(i==0){
-		fprintf(fp, "%s,%s,%s,%s\n",livros[TAM].isbn, livros[TAM].isbn, livros[TAM].isbn, livros[TAM].isbn);
-	
-	}else{
-	  fprintf(stderr, "%s","entre com ISBN\n"); 
-	  scanf(" %[^\n]", livros[TAM].isbn);
-	  fprintf(fp, "ISBN: %s\n",livros[TAM].isbn);
-	  fprintf(stderr, "%s","entre com titulo\n"); 
-	  scanf(" %[^\n]", livros[TAM].titulo);
-	  fprintf(fp, "Titulo: %s\n",livros[TAM].titulo);
-		fprintf(stderr, "%s","entre com descricao\n"); 
-	  scanf(" %[^\n]", livros[TAM].descricao);
-		fprintf(fp, "Descrição: %s\n",livros[TAM].descricao);  
-		fprintf(stderr, "%s","entre com autores\n"); 
-	  scanf(" %[^\n]", livros[TAM].autores);
-		fprintf(fp, "Autores: %s\n",livros[TAM].autores);
-	  fprintf(stderr, "%s","entre com editora\n"); 
-	  scanf(" %[^\n]", livros[TAM].editora);
-		fprintf(fp, "Editora: %s\n",livros[TAM].editora);
-	  fprintf(stderr, "%s","entre com ano\n"); 
-	  scanf(" %[^\n]", livros[TAM].ano);
-		fprintf(fp, "Ano: %s\n",livros[TAM].ano);
-		fprintf(stderr, "%s","entre com a quantidade em estoque\n"); 
-	  scanf(" %[^\n]", livros[TAM].quant);
-		fprintf(fp, "Estoque: %s\n",livros[TAM].quant);
-	  TAM++; 
-	}
-	}
+		for(i=0;i<2;i++){
+			if(i==0){
+				 fprintf(fp, "ISBN,Título,Descrição,Autores,Editora,Ano,Estoque\n");
+			}else{
+				fprintf(stderr, "%s","entre com ISBN\n"); 
+				scanf(" %[^\n]", livros[TAM].isbn);
+				fprintf(fp, "%s,",livros[TAM].isbn);
+
+				fprintf(stderr, "%s","entre com titulo\n"); 
+				scanf(" %[^\n]", livros[TAM].titulo);
+				fprintf(fp, "%s,",livros[TAM].titulo);
+
+				fprintf(stderr, "%s","entre com descricao\n"); 
+				scanf(" %[^\n]", livros[TAM].descricao);
+				fprintf(fp, "%s,",livros[TAM].descricao);  
+
+				fprintf(stderr, "%s","entre com autores\n"); 
+				scanf(" %[^\n]", livros[TAM].autores);
+				fprintf(fp, "%s,",livros[TAM].autores);
+
+				fprintf(stderr, "%s","entre com editora\n"); 
+				scanf(" %[^\n]", livros[TAM].editora);
+				fprintf(fp, "%s,",livros[TAM].editora);
+
+				fprintf(stderr, "%s","entre com ano\n"); 
+				scanf(" %[^\n]", livros[TAM].ano);
+				fprintf(fp, "%s,",livros[TAM].ano);
+
+				fprintf(stderr, "%s","entre com a quantidade em estoque\n"); 
+				scanf(" %[^\n]", livros[TAM].quant);
+				fprintf(fp, "%s\n",livros[TAM].quant);
+				TAM++; 
+				}
+			}
   }
 	  
  return;
+}
+
+void responde(char *buffer,char *saida){
+  char parametro_id[2];
+  int indice;
+    strcpy(parametro_id,buffer+2);
+  switch(buffer[0]){
+   case '1':/*listar titulos e ISBN*/
+    	//listaISBN();
+    break;   
+  case '2':/*Descrição a partir do ISBN*/
+    
+    break;
+  case '3':/*Todas as informações a partir do ISBN*/
+    
+    break;
+  case '4':/*Lista todas as informações de todos os livros*/
+   
+    break;
+  case '5':/*Altera o número de exemplares em estoque*/
+    
+    break;
+  case '6':/*Número de exemplares em estoque a partir do ISBN*/
+    
+    break;
+  case '7':/*encerra*/
+    strcpy(saida,"Encerra");
+    break;
+
+  }
+	return;  
+
 }
 
 void leSocket(int new_fd, char* buf) {
@@ -270,6 +291,32 @@ void analisaOpcao(int new_fd, char* buf) {
 	printf("%c\n",opcoes[1]);
 }
 
+FILE* openBD() {
+
+	FILE *fp;
+	fp = fopen("bd.csv", "r");
+	if (fp == NULL) {
+		printf("Problema ao abrir o arquivo\n");
+	} else {
+		printf("Arquivo aberto com sucesso\n");
+		return fp;
+	}
+}
+
+
+/*void listaISBN() {
+
+	FILE *bd;
+	bd = openBD();
+	char stringOutput[MAX][MAX];
+  char titulo[MAX]
+	int cont = 0;
+	while(!feof(bd)){
+		fscanf(bd, "%s", titulo);
+
+		cont++;
+	}
+}*/
 
 void zeraBuffer(char *buf){
   int i;
