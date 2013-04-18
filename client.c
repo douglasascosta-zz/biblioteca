@@ -33,7 +33,9 @@ void *get_in_addr(struct sockaddr *sa)
 
 int main(int argc, char *argv[])
 {
-	char opcao[1], isbn[13];
+	char opcao;
+	char* isbn;
+	char* qde;
     int sockfd, numbytes;  
     char buf[MAXDATASIZE];
     struct addrinfo hints, *servinfo, *p;
@@ -81,39 +83,68 @@ int main(int argc, char *argv[])
     printf("client: connecting to %s\n", s);
 	
     freeaddrinfo(servinfo); // all done with this structure
-	//imprime o menu pro cliente.	
+    
+	zeraBuffer(buf);
 	menu();
-	while (1) {
-/*		menu();
-		
-		scanf("%s", &opcao);
-		strcat(buf, opcao);
+	
+	scanf("%c", &opcao);
+	buf[0] = opcao;
+//		strcat(buf, &opcao);
 
-		strcat(buf, " - ");	
+	if (opcao == '2' || opcao == '3' || opcao == '5' || opcao == '6') {
+	
 		printf("Digite ISBN: ");
-		scanf("%s", &isbn);
-		strcat(buf, isbn);		
-		
-		printf("%s\n", buf);
-
-*/
-
-
-		while (send(sockfd, buf, strlen(buf), 0) == -1) {
-		}
-		while (recv(sockfd, buf, MAXDATASIZE-1, 0) == -1);
-		printf("%s\n", buf);
+	
+		isbn = malloc(10*sizeof(char));
+	
+		scanf("%10s", isbn);
+		strcat(buf, "-");
+		strcat(buf, isbn);
 	}
+	
+	if (opcao == '5') {
+		printf("Digite nova quantidade: ");
+		
+		qde = malloc(10*sizeof(char));
+		scanf("%10s", qde);
+		strcat(buf, "-");
+		strcat(buf, qde);
+	}
+	
+//	if (opcao == '7') {
+//		break;
+//	}
+	
+	printf("%s\n", buf);
+	
+	writeSocket(sockfd, buf);
 
-   	
+	readSocket(sockfd, buf);
 
-    buf[numbytes] = '\0';
-
-    printf("client: received '%s'\n",buf);
+	printf("client: received '%s'\n",buf);
 
     close(sockfd);
 
     return 0;
+}
+
+void readSocket(int socket, char* buf) {
+
+	int bytes;
+
+	if ((bytes = recv(socket, buf, MAXDATASIZE-1, 0)) == -1) {
+		perror("recv");
+		exit(1);
+	}
+	
+	buf[bytes] = '\0';
+}
+
+void writeSocket(int socket, char* buf) {
+
+	if (send(socket, buf, strlen(buf), 0) == -1)
+                perror("send");
+
 }
 
 void zeraBuffer(char *buf){
@@ -133,7 +164,7 @@ void menu(){
 	    printf("	6 - Número de exemplares em estoque a partir do ISBN\n"); 
 	    printf("	7 - Sair\n"); 
 	
-	    printf("Escolha uma opção:");
+	    printf("Escolha uma opção: ");
 		
 }
 

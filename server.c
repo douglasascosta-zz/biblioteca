@@ -30,11 +30,13 @@
 int initiateServer();
 FILE* openBD();
 void listaISBN(int tamanho);
-void leSocket(int new_fd, char* buf);
-void analisaOpcao(int new_fd, char* buf);
 void zeraBuffer(char *buf);
 void popula_banco();
 void responde();
+void readSocket(int socket, char* buf);
+void writeSocket(int socket, char* buf);
+void avaliaOpcao(char *bufin, char *bufout);
+
 //void lista_titulo(FILE *bd, int quant);
 //void lista_descricao(FILE *bd, int quant, char ISBN);
 //void imprime(int col, int lin, FILE *bd);
@@ -56,13 +58,13 @@ void *get_in_addr(struct sockaddr *sa)
 
 
 typedef struct Livro {
-  char isbn[13];
-  char titulo[200];
-  char descricao[300];
-  char autores[100];
-  char editora[50];
-  char ano[4];
-  char quant[3];
+	char isbn[13];
+	char titulo[200];
+	char descricao[300];
+	char autores[100];
+	char editora[50];
+	char ano[4];
+	char quant[3];
 } Serv_livro;
 
 Serv_livro livros[MAX];/*vetor contendo os livros*/
@@ -77,8 +79,8 @@ int main(void)
 }
 
 void zerabuffer(char *buffer){
-  int i;
-  for(i=0;i<BUFSIZE;i++)
+	int i;
+	for(i=0;i<BUFSIZE;i++)
     buffer[i] = '\0';
 }
 
@@ -87,6 +89,7 @@ int initiateServer() {
 
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	char buf[MAXDATASIZE];
+	char buf2[MAXDATASIZE];
 	int numbytes,i;
 	FILE *fp;
     struct addrinfo hints, *servinfo, *p;
@@ -115,8 +118,8 @@ int initiateServer() {
 		//responde(menu1, fp, 2);
 		//listaISBN(3);
 
-		if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
-	fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+	if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
+		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 	return 1;
     }
 
@@ -180,26 +183,101 @@ int initiateServer() {
 
 	//continuar fazendo recv
 
-	if (!fork()) { // this is the child process
-		printf("entrou no fork");
-    		close(sockfd); // child doesn't need the listener
-		zeraBuffer(buf);
-		leSocket(new_fd, buf);
-		printf("%s",buf);
-		analisaOpcao(new_fd, buf);
-    		if (send(new_fd, "lido", strlen(buf), 0) == -1)
-			perror("send");
-    		close(new_fd);
-    		exit(0);
-	}
-
-	printf("não entrou no fork");
-	close(new_fd);  // parent doesn't need this
+	 if (!fork()) { // this is the child process
+            close(sockfd); // child doesn't need the listener
+            
+	        readSocket(new_fd, buf);
+	        
+	       	avaliaOpcao(buf, buf2);            
+	        
+	        writeSocket(new_fd, buf);
+            
+            close(new_fd);
+            exit(0);
+        }
+        close(new_fd);  // parent doesn't need this
     }
+
 
 	return 0;
 }
 
+void avaliaOpcao(char *bufin, char *bufout) {
+
+	char opcao;
+	char *isbn;
+	char *qde;
+	int qdet;
+	int achou = 0;
+	int i, j;
+	
+	bufout = malloc(100*sizeof(char));
+	
+	opcao = bufin[0];
+	
+	strcat(bufout, "Opcao: ");
+	strcat(bufout, &opcao);
+	
+	if (opcao == '2' || opcao == '3' || opcao == '5' || opcao == '6') {
+		
+		isbn = malloc(10*sizeof(char));
+		
+		for (i=0;i<10;i++) {
+			if (bufin[i+2] == '-')
+				break;
+			isbn[i] = bufin[i+2];
+		}
+		
+		strcat(bufout, "-");
+		strcat(bufout, "ISBN: ");
+		strcat(bufout, isbn);
+	}
+	
+	if (opcao == '5') {
+	
+		qde = malloc(10*sizeof(char));
+		j = 0;
+		for (i = 2; i < strlen(bufin); i++) {
+			if (achou == 0) {
+				if (bufin[i] != '-' && achou == 0)
+					continue;
+				else {
+					achou = 1;
+					continue;
+				}
+			}
+			qde[j] = bufin[i];
+			j++;
+		}
+		
+		qdet = atoi(qde);
+		strcat(bufout, "-");
+		strcat(bufout, "Qde: ");
+		strcat(bufout, qde);
+	}
+	
+//	responde(1, NULL, NULL);
+}
+
+
+void readSocket(int socket, char* buf) {
+
+	int bytes;
+
+	if ((bytes = recv(socket, buf, MAXDATASIZE-1, 0)) == -1) {
+		perror("recv");
+		exit(1);
+	}
+	
+	buf[bytes] = '\0';
+}
+
+void writeSocket(int socket, char* buf) {
+
+	if (send(socket, buf, strlen(buf), 0) == -1)
+                perror("send");
+
+}
 
 /*funcao para insercao de um novo filme no banco*/
 void popula_banco(FILE *fp){
@@ -210,36 +288,36 @@ int i;
   }else{
 		for(i=0;i<2;i++){
 			
-				fprintf(stderr, "%s","entre com ISBN\n"); 
-				scanf(" %[^\n]", livros[TAM].isbn);
-				fprintf(fp, "%s;",livros[TAM].isbn);
+			fprintf(stderr, "%s","entre com ISBN\n"); 
+			scanf(" %[^\n]", livros[TAM].isbn);
+			fprintf(fp, "%s;",livros[TAM].isbn);
 
-				fprintf(stderr, "%s","entre com titulo\n"); 
-				scanf(" %[^\n]", livros[TAM].titulo);
-				fprintf(fp, "%s;",livros[TAM].titulo);
+			fprintf(stderr, "%s","entre com titulo\n"); 
+			scanf(" %[^\n]", livros[TAM].titulo);
+			fprintf(fp, "%s;",livros[TAM].titulo);
 
-				fprintf(stderr, "%s","entre com descricao\n"); 
-				scanf(" %[^\n]", livros[TAM].descricao);
-				fprintf(fp, "%s;",livros[TAM].descricao);  
+			fprintf(stderr, "%s","entre com descricao\n"); 
+			scanf(" %[^\n]", livros[TAM].descricao);
+			fprintf(fp, "%s;",livros[TAM].descricao);  
 
-				fprintf(stderr, "%s","entre com autores\n"); 
-				scanf(" %[^\n]", livros[TAM].autores);
-				fprintf(fp, "%s;",livros[TAM].autores);
+			fprintf(stderr, "%s","entre com autores\n"); 
+			scanf(" %[^\n]", livros[TAM].autores);
+			fprintf(fp, "%s;",livros[TAM].autores);
 
-				fprintf(stderr, "%s","entre com editora\n"); 
-				scanf(" %[^\n]", livros[TAM].editora);
-				fprintf(fp, "%s;",livros[TAM].editora);
+			fprintf(stderr, "%s","entre com editora\n"); 
+			scanf(" %[^\n]", livros[TAM].editora);
+			fprintf(fp, "%s;",livros[TAM].editora);
 
-				fprintf(stderr, "%s","entre com ano\n"); 
-				scanf(" %[^\n]", livros[TAM].ano);
-				fprintf(fp, "%s;",livros[TAM].ano);
+			fprintf(stderr, "%s","entre com ano\n"); 
+			scanf(" %[^\n]", livros[TAM].ano);
+			fprintf(fp, "%s;",livros[TAM].ano);
 
-				fprintf(stderr, "%s","entre com a quantidade em estoque\n"); 
-				scanf(" %[^\n]", livros[TAM].quant);
-				fprintf(fp, "%s\n",livros[TAM].quant);
-				TAM++; 
-				}
-			}
+			fprintf(stderr, "%s","entre com a quantidade em estoque\n"); 
+			scanf(" %[^\n]", livros[TAM].quant);
+			fprintf(fp, "%s\n",livros[TAM].quant);
+			TAM++; 
+		}
+	}
 	  
  return;
 }
@@ -281,25 +359,6 @@ int count =1,mod;
   }
 	return;  
 
-}
-
-void leSocket(int new_fd, char* buf) {
-
-	int numbytes;
-
-	do {
-		numbytes = ((int)recv(new_fd, buf, MAXDATASIZE-1, 0));
-	} while (numbytes == -1); 
-	buf[numbytes] = '\0';
-	printf("%s\n", buf);
-}
-
-void analisaOpcao(int new_fd, char* buf) {
-	
-	char* opcoes;
-	opcoes = strsep(&buf, " - ");
-	printf("%c\n",opcoes[0]);
-	printf("%c\n",opcoes[1]);
 }
 
 FILE* openBD() {
