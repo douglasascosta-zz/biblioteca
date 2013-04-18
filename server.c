@@ -35,10 +35,10 @@ void popula_banco();
 void responde();
 void readSocket(int socket, char* buf);
 void writeSocket(int socket, char* buf);
-void avaliaOpcao(char *bufin, char *bufout);
+void avaliaOpcao(char *buf, struct timeval *tv1, struct timeval *tv2);
 void closeBD();
-void lista_titulo(FILE *bd, int quant);
-void lista_descricao(FILE *bd, int quant, char ISBN[], int ret);
+void lista_titulo(char *buf, FILE *bd, int quant);
+void lista_descricao(char *buf, FILE *bd, int quant, char ISBN[], int ret);
 
 //void lista_titulo(FILE *bd, int quant);
 //void lista_descricao(FILE *bd, int quant, char ISBN);
@@ -92,7 +92,6 @@ int initiateServer() {
 
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	char buf[MAXDATASIZE];
-	char buf2[MAXDATASIZE];
 	int numbytes,i;
 	FILE *fp;
     struct addrinfo hints, *servinfo, *p;
@@ -105,6 +104,11 @@ int initiateServer() {
 		buf[i]='\0';
     int rv;
     int menu1;
+	struct timeval {
+		time_t      tv_sec;     /* seconds */
+		suseconds_t tv_usec;    /* microseconds */
+	};
+	struct timeval *tv1, *tv2;
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -191,7 +195,15 @@ int initiateServer() {
             
 	        readSocket(new_fd, buf);
 	        
-	       	avaliaOpcao(buf, buf2);            
+			tv1 = malloc(sizeof(struct timeval));
+			tv2 = malloc(sizeof(struct timeval));
+
+	       	avaliaOpcao(buf, tv1, tv2);
+
+			printf("time1: %d\n", (*tv1).tv_usec);
+			printf("time2: %d\n", (*tv2).tv_usec);
+			suseconds_t time = (*tv2).tv_usec - (*tv1).tv_usec;
+			printf("timeTotal: %d\n",time);            
 	        
 	        writeSocket(new_fd, buf);
             
@@ -205,7 +217,7 @@ int initiateServer() {
 	return 0;
 }
 
-void avaliaOpcao(char *bufin, char *bufout) {
+void avaliaOpcao(char *buf, struct timeval *tv1, struct timeval *tv2) {
 
 	char opcao;
 	char *isbn;
@@ -214,55 +226,45 @@ void avaliaOpcao(char *bufin, char *bufout) {
 	int achou = 0;
 	int i, j;
 	FILE *bd;
-	
-	bufout = malloc(100*sizeof(char));
-	
-	opcao = bufin[0];
-	
-	strcat(bufout, "Opcao: ");
-	strcat(bufout, &opcao);
 
-
-
+	gettimeofday(tv1, NULL);
+	
+	opcao = buf[0];
+	
 	if (opcao == '2' || opcao == '3' || opcao == '5' || opcao == '6') {
 		
 		isbn = malloc(10*sizeof(char));
 		
 		for (i=0;i<10;i++) {
-			if (bufin[i+2] == '-')
+			if (buf[i+2] == '-')
 				break;
-			isbn[i] = bufin[i+2];
+			isbn[i] = buf[i+2];
 		}
-		
-		strcat(bufout, "-");
-		strcat(bufout, "ISBN: ");
-		strcat(bufout, isbn);
 	}
 	
 	if (opcao == '5') {
 	
 		qde = malloc(10*sizeof(char));
 		j = 0;
-		for (i = 2; i < strlen(bufin); i++) {
+		for (i = 2; i < strlen(buf); i++) {
 			if (achou == 0) {
-				if (bufin[i] != '-' && achou == 0)
+				if (buf[i] != '-' && achou == 0)
 					continue;
 				else {
 					achou = 1;
 					continue;
 				}
 			}
-			qde[j] = bufin[i];
+			qde[j] = buf[i];
 			j++;
 		}
 		
 		qdet = atoi(qde);
-		strcat(bufout, "-");
-		strcat(bufout, "Qde: ");
-		strcat(bufout, qde);
 	}
 		bd= openBD();
-		responde(opcao, bd, qde,isbn);
+		responde(buf, opcao, bd, qde,isbn);
+
+		gettimeofday(tv2, NULL);
 }
 
 
@@ -286,7 +288,7 @@ void writeSocket(int socket, char* buf) {
 }
 
 
-void responde(int menu, FILE *bd, int quant,char *isbn){
+void responde(char *buf, int menu, FILE *bd, int quant,char *isbn){
   char parametro_id[2], c;
   int indice;
     //strcpy(parametro_id,buffer+2);
@@ -296,16 +298,15 @@ int files;
 int count =1,mod;
   switch(menu){
    case 1:/*listar titulos e ISBN*/
-				lista_titulo(bd,quant);
-				closeBD(bd);
+		lista_titulo(buf, bd,quant);
+		closeBD(bd);
     break;   
   case 2:/*Descrição a partir do ISBN*/
-				
-    			lista_descricao(bd,quant,isbn,3);
-    			closeBD(bd);
+		lista_descricao(buf, bd,quant,isbn,3);
+		closeBD(bd);
     break;
   case 3:/*Todas as informações a partir do ISBN*/
-    		lista_descricao(bd,quant,isbn,0);
+		lista_descricao(buf, bd,quant,isbn,0);
     break;
   case 4:/*Lista todas as informações de todos os livros*/
    		
@@ -314,7 +315,7 @@ int count =1,mod;
     
     break;
   case 6:/*Número de exemplares em estoque a partir do ISBN*/
-    		lista_descricao(bd,quant,isbn,7);
+		lista_descricao(buf, bd,quant,isbn,7);
     break;
   case 7:/*encerra*/
     //strcpy(saida,"Encerra");
@@ -347,7 +348,7 @@ void zeraBuffer(char *buf){
     buf[i] = '\0';
 }
 
-void imprime(int col, int lin, FILE *bd){
+void imprime(int col, int lin, FILE *bd, char *buf){
 	int indice;
 	char c;
 	int i , j, valida =0, k;
@@ -400,24 +401,24 @@ void imprime(int col, int lin, FILE *bd){
 		closeBD(bd);
 }
 
-void lista_titulo(FILE *bd, int quant){
-  int indice;
+void lista_titulo(char *buf, FILE *bd, int quant){
+  	int indice;
     //strcpy(parametro_id,buffer+2);
-char c;
-int i = 0;
-int files;
-int count =1;
-int j;
+	char c;
+	int i = 0;
+	int files;
+	int count =1;
+	int j;
 
 
-			for (j=0;j<quant;j++){//para todas as linhas
-				imprime(1, j, bd);
-				imprime(2, j, bd);
+	for (j=0;j<quant;j++){//para todas as linhas
+		imprime(1, j, bd, buf);
+		imprime(2, j, bd, buf);
 
-				}
+		}
 }
 
-void lista_descricao(FILE *bd, int quant, char ISBN[], int ret){
+void lista_descricao(char *buf, FILE *bd, int quant, char ISBN[], int ret){
 printf("entrei no lista_descricao\n");
   int indice;
     //strcpy(parametro_id,buffer+2);
@@ -450,17 +451,18 @@ printf("entrei no lista_descricao\n");
 
 			if (valida==1){
 				printf("ISBN: %s\n",ISBN);
-				if (ret == 3) imprime(3,j,bd);
-				if (ret == 7) imprime(3,j,bd);
+				if (ret == 3) imprime(3,j,bd, buf);
+				if (ret == 7) imprime(3,j,bd, buf);
 				if (ret == 0){
-					 imprime(2,j,bd);
-						imprime(3,j,bd);
-						imprime(4,j,bd);
-						imprime(5,j,bd);
-						imprime(6,j,bd);
-						imprime(7,j,bd);
+					 imprime(2,j,bd, buf);
+						imprime(3,j,bd, buf);
+						imprime(4,j,bd, buf);
+						imprime(5,j,bd, buf);
+						imprime(6,j,bd, buf);
+						imprime(7,j,bd, buf);
 
 			}
+	}
 }
 
 /*funcao para insercao de um novo filme no banco*/

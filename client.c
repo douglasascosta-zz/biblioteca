@@ -20,6 +20,8 @@
 
 void zeraBuffer(char *buf);
 void menu();
+void readSocket(int socket, char* buf, struct timeval *tv);
+void writeSocket(int socket, char* buf, struct timeval *tv);
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -41,6 +43,11 @@ int main(int argc, char *argv[])
     struct addrinfo hints, *servinfo, *p;
     int rv;
     char s[INET6_ADDRSTRLEN];
+	struct timeval {
+		time_t      tv_sec;     /* seconds */
+		suseconds_t tv_usec;    /* microseconds */
+	};
+	struct timeval *tv1, *tv2;
 
     if (argc != 2) {
         fprintf(stderr,"usage: client hostname\n");
@@ -111,26 +118,31 @@ int main(int argc, char *argv[])
 		strcat(buf, qde);
 	}
 	
-//	if (opcao == '7') {
-//		break;
-//	}
-	
 	printf("%s\n", buf);
-	
-	writeSocket(sockfd, buf);
 
-	readSocket(sockfd, buf);
+	tv1 = malloc(sizeof(struct timeval));
+	tv2 = malloc(sizeof(struct timeval));
+	
+	writeSocket(sockfd, buf, tv1);
+
+	readSocket(sockfd, buf, tv2);
 
 	printf("client: received '%s'\n",buf);
+	printf("time1: %d\n", (*tv1).tv_usec);
+	printf("time2: %d\n", (*tv2).tv_usec);
+	suseconds_t time = (*tv2).tv_usec - (*tv1).tv_usec;
+	printf("timeTotal: %d\n",time);
 
     close(sockfd);
 
     return 0;
 }
 
-void readSocket(int socket, char* buf) {
+void readSocket(int socket, char* buf, struct timeval *tv) {
 
 	int bytes;
+
+	gettimeofday(tv, NULL);
 
 	if ((bytes = recv(socket, buf, MAXDATASIZE-1, 0)) == -1) {
 		perror("recv");
@@ -140,10 +152,12 @@ void readSocket(int socket, char* buf) {
 	buf[bytes] = '\0';
 }
 
-void writeSocket(int socket, char* buf) {
+void writeSocket(int socket, char* buf, struct timeval *tv) {
 
 	if (send(socket, buf, strlen(buf), 0) == -1)
                 perror("send");
+
+	gettimeofday(tv, NULL);
 
 }
 
