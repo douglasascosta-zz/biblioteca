@@ -368,13 +368,35 @@ void imprime(int col, int lin, FILE *bd){
 				k=0;
 			}
 		}
-		if (count == 1) printf("ISBN: %s\n", campo);
-		if (count == 2) printf("Título: %s\n",campo);
-		if (count == 3) printf("Descricao: %s\n",campo);
-		if (count == 4) printf("Autores: %s\n",campo);
-		if (count == 5) printf("Editora: %s\n",campo);
-		if (count == 6) printf("Ano: %s\n",campo);
-		if (count == 7) printf("Quantidade: %s\n",campo);
+		if (count == 1) {
+			strcat(buf, "-");
+			strcat(buf, campo);
+			}
+		//printf("ISBN: %s\n", campo);
+		if (count == 2) {
+			strcat(buf, "-");
+			strcat(buf, campo);
+			}//printf("Título: %s\n",campo);
+		if (count == 3) {
+			strcat(buf, "-");
+			strcat(buf, campo);
+			}//printf("Descricao: %s\n",campo);
+		if (count == 4) {
+			strcat(buf, "-");
+			strcat(buf, campo);
+			}//printf("Autores: %s\n",campo);
+		if (count == 5) {
+			strcat(buf, "-");
+			strcat(buf, campo);
+			}//printf("Editora: %s\n",campo);
+		if (count == 6) {
+			strcat(buf, "-");
+			strcat(buf, campo);
+			}//printf("Ano: %s\n",campo);
+		if (count == 7) {
+			strcat(buf, "-");
+			strcat(buf, campo);
+			}//printf("Quantidade: %s\n",campo);
 		closeBD(bd);
 }
 
