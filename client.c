@@ -129,12 +129,12 @@ int main(int argc, char *argv[])
 
 		tv1 = malloc(sizeof(struct timeval));
 		tv2 = malloc(sizeof(struct timeval));
-	
+		
+
 		writeSocket(sockfd, buf, tv1);
 
 		readSocket(sockfd, buf, tv2);
 
-		//printf("client: received '%s'\n",buf);
 		//printf("time1: %d\n", (*tv1).tv_usec);
 		//printf("time2: %d\n", (*tv2).tv_usec);
 		suseconds_t time = (*tv2).tv_usec - (*tv1).tv_usec;

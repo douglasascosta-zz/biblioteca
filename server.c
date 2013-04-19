@@ -39,19 +39,15 @@ void avaliaOpcao(char *buf, struct timeval *tv1, struct timeval *tv2);
 void closeBD();
 void lista_titulo(char *buf, FILE *bd, int quant);
 void lista_descricao(char *buf, FILE *bd, int quant, char ISBN[], int ret);
+void imprime(int col, int lin, FILE *bd, char *buf);
+void altera_bd(char *buf, FILE *bd, int quant, char ISBN[]);
 
-//void lista_titulo(FILE *bd, int quant);
-//void lista_descricao(FILE *bd, int quant, char ISBN);
-//void imprime(int col, int lin, FILE *bd);
-
-void sigchld_handler(int s)
-{
+void sigchld_handler(int s){
     while(waitpid(-1, NULL, WNOHANG) > 0);
 }
 
 // get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa)
-{
+void *get_in_addr(struct sockaddr *sa){
     if (sa->sa_family == AF_INET) {
         return &(((struct sockaddr_in*)sa)->sin_addr);
     }
@@ -73,8 +69,7 @@ typedef struct Livro {
 Serv_livro livros[MAX];/*vetor contendo os livros*/
 int TAM = 0;/*guarda o numero de livros*/
 int col;
-int main(void)
-{
+int main(void){
 	int opcao;
 	
 	initiateServer();
@@ -104,10 +99,12 @@ int initiateServer() {
 		buf[i]='\0';
     int rv;
     int menu1;
+    
 	struct timeval {
 		time_t      tv_sec;     /* seconds */
 		suseconds_t tv_usec;    /* microseconds */
 	};
+	
 	struct timeval *tv1, *tv2;
 
     memset(&hints, 0, sizeof hints);
@@ -196,12 +193,12 @@ int initiateServer() {
 			int i;
 			for(i = 0;i < 50; i++) {
 
-			    readSocket(new_fd, buf);
+			   readSocket(new_fd, buf);
 			    
 				tv1 = malloc(sizeof(struct timeval));
 				tv2 = malloc(sizeof(struct timeval));
 
-			   	avaliaOpcao(buf, tv1, tv2);
+			   avaliaOpcao(buf, tv1, tv2);
 
 				//printf("time1: %d\n", (*tv1).tv_usec);
 				//printf("time2: %d\n", (*tv2).tv_usec);
@@ -296,7 +293,7 @@ void writeSocket(int socket, char* buf) {
 void responde(char *buf, int menu, FILE *bd, int quant,char *isbn){
   char parametro_id[2], c;
   int indice;
-    //strcpy(parametro_id,buffer+2);
+ // strcpy(parametro_id,buf+2);
 
 int i = 0;
 int files;
@@ -304,23 +301,26 @@ int count =1,mod;
   switch(menu){
    case 1:/*listar titulos e ISBN*/
 		lista_titulo(buf, bd,quant);
-		closeBD(bd);
+		//closeBD(bd);
     break;   
   case 2:/*Descrição a partir do ISBN*/
-		lista_descricao(buf, bd,quant,isbn,3);
-		closeBD(bd);
+		lista_menu(buf, bd,quant,isbn,3);
+		//closeBD(bd);
     break;
   case 3:/*Todas as informações a partir do ISBN*/
-		lista_descricao(buf, bd,quant,isbn,0);
+		lista_menu(buf, bd,quant,isbn,0);
+		//closeBD(bd);
     break;
   case 4:/*Lista todas as informações de todos os livros*/
-   		
+   		lista_tudo(buf,bd,quant);
+   		//closeBD(bd);
     break;
   case 5:/*Altera o número de exemplares em estoque*/
-    
+    		altera_bd(buf ,bd,quant,isbn);
     break;
   case 6:/*Número de exemplares em estoque a partir do ISBN*/
-		lista_descricao(buf, bd,quant,isbn,7);
+		lista_menu(buf, bd,quant,isbn,7);
+		//closeBD(bd);
     break;
   case 7:/*encerra*/
     //strcpy(saida,"Encerra");
@@ -362,7 +362,12 @@ void imprime(int col, int lin, FILE *bd, char *buf){
 	char campo[300];
 	char linha[500];	
 	char *result;
-	
+	for(i=0;i<300;i++) {
+		campo[i]	=' ';	
+		}
+	for(i=0;i<500;i++) {
+		linha[i]	=' ';
+		}
 
 		for (i = 1; i<=lin; i++) 
 			fgets(linha, 500, bd);						
@@ -374,57 +379,61 @@ void imprime(int col, int lin, FILE *bd, char *buf){
 				k=0;
 			}
 		}
-		if (count == 1) {
+		if (col== 1) {
 			strcat(buf, "-");
 			strcat(buf, campo);
+			//printf("ISBN: %s\n", campo);
 			}
-		//printf("ISBN: %s\n", campo);
-		if (count == 2) {
+		
+		if (col == 2) {
 			strcat(buf, "-");
 			strcat(buf, campo);
-			}//printf("Título: %s\n",campo);
-		if (count == 3) {
+			//printf("Título: %s\n",campo);
+			}
+		if (col == 3) {
 			strcat(buf, "-");
 			strcat(buf, campo);
-			}//printf("Descricao: %s\n",campo);
-		if (count == 4) {
+			//printf("Descricao: %s\n",campo);
+			}
+		if (col == 4) {
 			strcat(buf, "-");
 			strcat(buf, campo);
-			}//printf("Autores: %s\n",campo);
-		if (count == 5) {
+			//printf("Autores: %s\n",campo);
+			}
+		if (col == 5) {
 			strcat(buf, "-");
 			strcat(buf, campo);
-			}//printf("Editora: %s\n",campo);
-		if (count == 6) {
+			//printf("Editora: %s\n",campo);
+			}
+		if (col == 6) {
 			strcat(buf, "-");
 			strcat(buf, campo);
-			}//printf("Ano: %s\n",campo);
-		if (count == 7) {
+			//printf("Ano: %s\n",campo);
+			}
+		if (col == 7) {
 			strcat(buf, "-");
 			strcat(buf, campo);
-			}//printf("Quantidade: %s\n",campo);
+			//printf("Quantidade: %s\n",campo);
+			}
 		closeBD(bd);
 }
 
 void lista_titulo(char *buf, FILE *bd, int quant){
-  	int indice;
+  int indice;
     //strcpy(parametro_id,buffer+2);
 	char c;
 	int i = 0;
 	int files;
 	int count =1;
 	int j;
-
-
 	for (j=0;j<quant;j++){//para todas as linhas
 		imprime(1, j, bd, buf);
 		imprime(2, j, bd, buf);
-
-		}
+	}
 }
 
-void lista_descricao(char *buf, FILE *bd, int quant, char ISBN[], int ret){
-printf("entrei no lista_descricao\n");
+void lista_menu(char *buf, FILE *bd, int quant, char ISBN[], int ret){
+
   int indice;
     //strcpy(parametro_id,buffer+2);
 	char c;
@@ -436,7 +445,7 @@ printf("entrei no lista_descricao\n");
 	char *result;	
 	fseek(bd, 0, SEEK_SET);
 
-		while (!feof(bd)){//enquanto tiver arquivo e nao achar o isbn
+		//while (!feof(bd)){//enquanto tiver arquivo e nao achar o isbn
 			for (j=0;j<quant;j++){//para todas as linhas
 				for (i=0;i<100 && c!='\n';i++){//percorre a linha inteira
 						c = getc(bd);//le o caractere e coloca em linha[]
@@ -452,22 +461,29 @@ printf("entrei no lista_descricao\n");
 						}
 				}
 			}
-		}
+		//}
 
 			if (valida==1){
-				printf("ISBN: %s\n",ISBN);
-				if (ret == 3) imprime(3,j,bd, buf);
-				if (ret == 7) imprime(3,j,bd, buf);
+				if (ret == 3) {
+					imprime(1,j,bd,buf);
+					imprime(3,j,bd,buf);
+					}
+				if (ret == 7) {
+					imprime(1,j,bd, buf);
+					imprime(7,j,bd,buf);
+					}
 				if (ret == 0){
-					 imprime(2,j,bd, buf);
-						imprime(3,j,bd, buf);
-						imprime(4,j,bd, buf);
-						imprime(5,j,bd, buf);
-						imprime(6,j,bd, buf);
-						imprime(7,j,bd, buf);
-
+					imprime(1,j,bd, buf);
+					imprime(2,j,bd,buf);
+					imprime(3,j,bd, buf);
+					imprime(4,j,bd, buf);
+					imprime(5,j,bd, buf);
+					imprime(6,j,bd, buf);
+					imprime(7,j,bd, buf);
+				}
+			}else{
+					printf("Não achou ISBN");
 			}
-	}
 }
 
 /*funcao para insercao de um novo filme no banco*/
@@ -513,3 +529,35 @@ int i;
  return;
 }
 
+void lista_tudo(char *buf, FILE *bd, int quant){
+  int indice;
+    //strcpy(parametro_id,buffer+2);
+	char c;
+	int i,j,k, valida =0;
+	int files;
+	int count =0,mod;
+	char linha[100];
+	char *result;	
+	fseek(bd, 0, SEEK_SET);
+	//while (!feof(bd)){//enquanto tiver arquivo e nao achar o isbn
+		for (j=0;j<quant;j++){//para todas as linhas
+			for (i=0;i<100 && c!='\n';i++){//percorre a linha inteira
+				c = getc(bd);//le o caractere e coloca em linha[]
+				linha[i] = c;
+			}
+				imprime(1,j,bd,buf);
+				imprime(2,j,bd,buf);
+				imprime(3,j,bd,buf);
+				imprime(4,j,bd,buf);
+				imprime(5,j,bd,buf);
+				imprime(6,j,bd,buf);
+				imprime(7,j,bd,buf);
+			}
+	//}
+			
+			
+}
+
+void altera_bd(char *buf, FILE *bd, int quant, char ISBN[]){
+
+	}
