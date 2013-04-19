@@ -192,20 +192,25 @@ int initiateServer() {
 
 	 if (!fork()) { // this is the child process
             close(sockfd); // child doesn't need the listener
-            
-	        readSocket(new_fd, buf);
-	        
-			tv1 = malloc(sizeof(struct timeval));
-			tv2 = malloc(sizeof(struct timeval));
 
-	       	avaliaOpcao(buf, tv1, tv2);
+			int i;
+			for(i = 0;i < 50; i++) {
 
-			printf("time1: %d\n", (*tv1).tv_usec);
-			printf("time2: %d\n", (*tv2).tv_usec);
-			suseconds_t time = (*tv2).tv_usec - (*tv1).tv_usec;
-			printf("timeTotal: %d\n",time);            
-	        
-	        writeSocket(new_fd, buf);
+			    readSocket(new_fd, buf);
+			    
+				tv1 = malloc(sizeof(struct timeval));
+				tv2 = malloc(sizeof(struct timeval));
+
+			   	avaliaOpcao(buf, tv1, tv2);
+
+				//printf("time1: %d\n", (*tv1).tv_usec);
+				//printf("time2: %d\n", (*tv2).tv_usec);
+				suseconds_t time = (*tv2).tv_usec - (*tv1).tv_usec;
+				printf("i: %d\n", i);
+				printf("timeTotal: %d\n",time);            
+			    
+			    writeSocket(new_fd, buf);
+			}
             
             close(new_fd);
             exit(0);
@@ -333,7 +338,7 @@ FILE* openBD() {
 	if (fp == NULL) {
 		printf("Problema ao abrir o arquivo\n");
 	} else {
-		printf("Arquivo aberto com sucesso\n");
+		//printf("Arquivo aberto com sucesso\n");
 		return fp;
 	}
 }

@@ -87,51 +87,60 @@ int main(int argc, char *argv[])
 
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
             s, sizeof s);
-    printf("client: connecting to %s\n", s);
+    //printf("client: connecting to %s\n", s);
 	
     freeaddrinfo(servinfo); // all done with this structure
-    
-	zeraBuffer(buf);
-	menu();
-	
+
+	//menu();
+
 	scanf("%c", &opcao);
-	buf[0] = opcao;
-//		strcat(buf, &opcao);
+    
+	int i;
+	for(i = 0;i < 50; i++) {
 
-	if (opcao == '2' || opcao == '3' || opcao == '5' || opcao == '6') {
+		zeraBuffer(buf);
+		buf[0] = opcao;
+		//strcat(buf, &opcao);
+
+		if (opcao == '2' || opcao == '3' || opcao == '5' || opcao == '6') {
 	
-		printf("Digite ISBN: ");
+			//printf("Digite ISBN: ");
 	
-		isbn = malloc(10*sizeof(char));
+			//isbn = malloc(10*sizeof(char));
 	
-		scanf("%10s", isbn);
-		strcat(buf, "-");
-		strcat(buf, isbn);
-	}
+			//scanf("%10s", isbn);
+			isbn = "1234567890";
+
+			strcat(buf, "-");
+			strcat(buf, isbn);
+		}
 	
-	if (opcao == '5') {
-		printf("Digite nova quantidade: ");
+		if (opcao == '5') {
+			//printf("Digite nova quantidade: ");
 		
-		qde = malloc(10*sizeof(char));
-		scanf("%10s", qde);
-		strcat(buf, "-");
-		strcat(buf, qde);
+			//qde = malloc(10*sizeof(char));
+			//scanf("%10s", qde);
+			qde="35";
+			strcat(buf, "-");
+			strcat(buf, qde);
+		}
+	
+		printf("%s\n", buf);
+
+		tv1 = malloc(sizeof(struct timeval));
+		tv2 = malloc(sizeof(struct timeval));
+	
+		writeSocket(sockfd, buf, tv1);
+
+		readSocket(sockfd, buf, tv2);
+
+		//printf("client: received '%s'\n",buf);
+		//printf("time1: %d\n", (*tv1).tv_usec);
+		//printf("time2: %d\n", (*tv2).tv_usec);
+		suseconds_t time = (*tv2).tv_usec - (*tv1).tv_usec;
+		printf("timeTotal: %d\n",time);
+		printf("i: %d\n",i);
 	}
-	
-	printf("%s\n", buf);
-
-	tv1 = malloc(sizeof(struct timeval));
-	tv2 = malloc(sizeof(struct timeval));
-	
-	writeSocket(sockfd, buf, tv1);
-
-	readSocket(sockfd, buf, tv2);
-
-	printf("client: received '%s'\n",buf);
-	printf("time1: %d\n", (*tv1).tv_usec);
-	printf("time2: %d\n", (*tv2).tv_usec);
-	suseconds_t time = (*tv2).tv_usec - (*tv1).tv_usec;
-	printf("timeTotal: %d\n",time);
 
     close(sockfd);
 
