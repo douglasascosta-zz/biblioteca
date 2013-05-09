@@ -102,7 +102,7 @@ void verificaOpcao() {
 			strcat(sendline, "-");
 			strcat(sendline, qde);
 		}
-	} else if (op == 1) {
+	} else if ((op == 1)||(op==4)) {
 		//continua
 	} else {
 		printf("Opção inválida");
