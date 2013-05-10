@@ -33,27 +33,31 @@ int main(int argc, char**argv) {
 
 		scanf("%s", &opcao);
 
-		verificaOpcao();
+		int i;
+		for (i = 0; i < 50; ++i) {
 
-		printf("%s\n", sendline);
+			verificaOpcao();
 
-		tv1 = malloc(sizeof(struct timeval));
-		tv2 = malloc(sizeof(struct timeval));
+			printf("%s\n", sendline);
 
-		gettimeofday(tv1, NULL);
+			tv1 = malloc(sizeof(struct timeval));
+			tv2 = malloc(sizeof(struct timeval));
 
-		sendto(sockfd, sendline, strlen(sendline), 0,
-				(struct sockaddr *) &servaddr, sizeof(servaddr));
-		n = recvfrom(sockfd, recvline, 10000, 0, NULL, NULL );
+			gettimeofday(tv1, NULL );
 
-		gettimeofday(tv2, NULL);
+			sendto(sockfd, sendline, strlen(sendline), 0,
+					(struct sockaddr *) &servaddr, sizeof(servaddr));
+			n = recvfrom(sockfd, recvline, 10000, 0, NULL, NULL );
 
-		suseconds_t time = (*tv2).tv_usec - (*tv1).tv_usec;
-		//printf("i: %d\n", i);
-		printf("Tempo total.: %d\n", time);
+			gettimeofday(tv2, NULL );
 
-		recvline[n] = 0;
-		printf("%s\n\n\n", recvline);
+			suseconds_t time = (*tv2).tv_usec - (*tv1).tv_usec;
+			//printf("i: %d\n", i);
+			printf("Tempo total %d : %d\n", i,time);
+
+			recvline[n] = 0;
+			printf("%s\n\n\n", recvline);
+		}
 	}
 }
 
@@ -84,11 +88,12 @@ void verificaOpcao() {
 		exit(1);
 	} else if (op == 2 || op == 3 || op == 5 || op == 6) {
 
-		printf("Digite ISBN: ");
+		//printf("Digite ISBN: ");
 
-//		isbn = malloc(10*sizeof(char));
+		//isbn = malloc(10*sizeof(char));
+		strcpy(isbn, "01");
 
-		scanf("%10s", isbn);
+		//scanf("%10s", isbn);
 
 		strcat(sendline, "-");
 		strcat(sendline, isbn);
@@ -98,11 +103,12 @@ void verificaOpcao() {
 
 			//qde = malloc(10*sizeof(char));
 			char qde[4];
-			scanf("%4s", qde);
+			strcpy(qde, "25");
+			//scanf("%4s", qde);
 			strcat(sendline, "-");
 			strcat(sendline, qde);
 		}
-	} else if ((op == 1)||(op==4)) {
+	} else if ((op == 1) || (op == 4)) {
 		//continua
 	} else {
 		printf("Opção inválida");
